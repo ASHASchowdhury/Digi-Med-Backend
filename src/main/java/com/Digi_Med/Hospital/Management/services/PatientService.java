@@ -9,6 +9,7 @@ public interface PatientService {
     PatientResponseDTO getPatientById(Long id);
     PatientResponseDTO getPatientByRegistrationNumber(String registrationNumber);
     PatientResponseDTO getPatientByPhoneNumber(String phoneNumber);
+    PatientResponseDTO getPatientByEmail(String email);
     List<PatientResponseDTO> getAllPatients();
     List<PatientResponseDTO> searchPatientsByName(String name);
     List<PatientResponseDTO> getPatientsByCity(String city);

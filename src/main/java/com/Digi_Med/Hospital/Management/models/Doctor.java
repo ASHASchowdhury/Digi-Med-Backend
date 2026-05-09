@@ -7,31 +7,40 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "doctors")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class Doctor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email;
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Column(nullable = false)
-    private String password;
-
-    private String fullName;
+    private String firstName;
+    private String lastName;
+    private String specialization;
+    private String qualification;
+    private String experience;
+    private String licenseNumber;
     private String phoneNumber;
-
-    @Enumerated(EnumType.STRING)
-    private Role role;
-
-    private boolean enabled = true;
+    private String email;
+    private String consultationFee;
+    private String availability;
+    private String status = "ACTIVE";
+    private String department;
+    private String chamberAddress;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public String getFullName() {
+        return "Dr. " + firstName + " " + lastName;
+    }
 
     @PrePersist
     protected void onCreate() {

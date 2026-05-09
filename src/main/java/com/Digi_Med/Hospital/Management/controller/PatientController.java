@@ -1,6 +1,5 @@
 package com.Digi_Med.Hospital.Management.controller;
 
-
 import com.Digi_Med.Hospital.Management.dtos.PatientRegistrationRequest;
 import com.Digi_Med.Hospital.Management.dtos.PatientResponseDTO;
 import com.Digi_Med.Hospital.Management.services.PatientService;
@@ -41,6 +40,11 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getPatientByPhoneNumber(phoneNumber));
     }
 
+    @GetMapping("/email/{email}")
+    public ResponseEntity<PatientResponseDTO> getPatientByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(patientService.getPatientByEmail(email));
+    }
+
     @GetMapping
     public ResponseEntity<List<PatientResponseDTO>> getAllPatients() {
         return ResponseEntity.ok(patientService.getAllPatients());
@@ -57,7 +61,8 @@ public class PatientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PatientResponseDTO> updatePatient(@PathVariable Long id, @Valid @RequestBody PatientRegistrationRequest request) {
+    public ResponseEntity<PatientResponseDTO> updatePatient(@PathVariable Long id,
+                                                            @Valid @RequestBody PatientRegistrationRequest request) {
         return ResponseEntity.ok(patientService.updatePatient(id, request));
     }
 

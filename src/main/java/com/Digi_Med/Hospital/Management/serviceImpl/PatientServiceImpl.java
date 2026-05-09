@@ -8,6 +8,7 @@ import com.Digi_Med.Hospital.Management.models.Role;
 import com.Digi_Med.Hospital.Management.repository.PatientRepository;
 import com.Digi_Med.Hospital.Management.repository.UserRepository;
 import com.Digi_Med.Hospital.Management.services.PatientService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
@@ -20,36 +21,35 @@ public class PatientServiceImpl implements PatientService {
 
     private final PatientRepository patientRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public PatientServiceImpl(PatientRepository patientRepository, UserRepository userRepository) {
+    public PatientServiceImpl(PatientRepository patientRepository, UserRepository userRepository,
+                              PasswordEncoder passwordEncoder) {
         this.patientRepository = patientRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     @Transactional
     public PatientResponseDTO registerPatient(PatientRegistrationRequest request) {
-        // Check if email exists
         if (userRepository.existsByEmail(request.getLoginEmail())) {
             throw new RuntimeException("Email already registered: " + request.getLoginEmail());
         }
 
-        // Check if phone exists
         if (patientRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new RuntimeException("Phone number already registered: " + request.getPhoneNumber());
         }
 
-        // Create User
         User user = new User();
         user.setEmail(request.getLoginEmail());
-        user.setPassword(request.getLoginPassword()); // Will encode later
+        user.setPassword(passwordEncoder.encode(request.getLoginPassword()));
         user.setFullName(request.getFirstName() + " " + request.getLastName());
         user.setPhoneNumber(request.getPhoneNumber());
         user.setRole(Role.PATIENT);
         user.setEnabled(true);
         User savedUser = userRepository.save(user);
 
-        // Create Patient
         Patient patient = new Patient();
         patient.setUser(savedUser);
         patient.setFirstName(request.getFirstName());
@@ -95,6 +95,13 @@ public class PatientServiceImpl implements PatientService {
     public PatientResponseDTO getPatientByPhoneNumber(String phoneNumber) {
         Patient patient = patientRepository.findByPhoneNumber(phoneNumber)
                 .orElseThrow(() -> new RuntimeException("Patient not found with phone number: " + phoneNumber));
+        return convertToResponseDTO(patient);
+    }
+
+    @Override
+    public PatientResponseDTO getPatientByEmail(String email) {
+        Patient patient = patientRepository.findByUser_Email(email)
+                .orElseThrow(() -> new RuntimeException("Patient not found with email: " + email));
         return convertToResponseDTO(patient);
     }
 
@@ -190,7 +197,6 @@ public class PatientServiceImpl implements PatientService {
         dto.setFullName(patient.getFullName());
         dto.setDateOfBirth(patient.getDateOfBirth());
 
-        // Calculate age
         if (patient.getDateOfBirth() != null) {
             int age = Period.between(patient.getDateOfBirth(), LocalDate.now()).getYears();
             dto.setAge(age);
